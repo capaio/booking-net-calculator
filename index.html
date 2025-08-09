@@ -1,180 +1,257 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calcolo netto da lordo (Booking)</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-  <style>
-      .result-number { font-variant-numeric: tabular-nums; }
-      .sticky-footer { position: sticky; bottom: 0; z-index: 10; }
-      .muted { opacity: .8; }
-      @media (min-width: 1024px){
-          .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-      }
-  </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Calcolo netto da lordo (Booking)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        .result-number { font-variant-numeric: tabular-nums; }
+        .sticky-footer { position: sticky; bottom: 0; z-index: 10; }
+        .muted { opacity: .8; }
+        @media (min-width: 1024px){
+            .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        }
+    </style>
 </head>
 <body class="has-background-light">
 <section class="section">
-  <div class="container">
-    <h1 class="title is-3">Calcolo guadagno netto da lordo (Booking)</h1>
+    <div class="container">
+        <h1 class="title is-3">Calcolo netto da lordo (Booking)</h1>
 
-    <div class="card">
-      <div class="card-content">
-        <div class="columns">
-          <div class="column is-6">
-            <label class="label" for="gross">Lordo (€)</label>
-            <div class="field has-addons">
-              <p class="control"><a class="button is-static">€</a></p>
-              <p class="control is-expanded">
-                <input id="gross" class="input" type="number" min="0" step="0.01" placeholder="Es. 250" autofocus />
-              </p>
+        <!-- INPUT -->
+        <div class="card">
+            <div class="card-content">
+                <div class="columns is-variable is-4 is-multiline">
+                    <div class="column is-6">
+                        <label class="label" for="gross">Lordo (€)</label>
+                        <div class="field has-addons">
+                            <p class="control"><a class="button is-static">€</a></p>
+                            <p class="control is-expanded">
+                                <input id="gross" class="input" type="number" min="0" step="0.01" placeholder="Es. 250" autofocus />
+                            </p>
+                        </div>
+                        <p class="help">Inserisci l’importo lordo della prenotazione.</p>
+                    </div>
+
+                    <div class="column is-6">
+                        <details class="box" style="padding:.75rem;">
+                            <summary class="has-text-weight-semibold">Opzioni (aliquote)</summary>
+
+                            <div class="columns is-mobile" style="margin-top:.5rem;">
+                                <div class="column">
+                                    <label class="label is-small">Commissione (%)</label>
+                                    <div class="field has-addons">
+                                        <p class="control is-expanded">
+                                            <input id="rateComm" class="input is-small" type="number" step="0.01" min="0" value="15">
+                                        </p>
+                                        <p class="control"><a class="button is-small is-static">%</a></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <label class="label is-small">Costo transazione (%)</label>
+                                    <div class="field has-addons">
+                                        <p class="control is-expanded">
+                                            <input id="rateTxn" class="input is-small" type="number" step="0.01" min="0" value="1.5">
+                                        </p>
+                                        <p class="control"><a class="button is-small is-static">%</a></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="columns is-mobile">
+                                <div class="column">
+                                    <label class="label is-small">Cedolare secca (%)</label>
+                                    <div class="field has-addons">
+                                        <p class="control is-expanded">
+                                            <input id="rateCed" class="input is-small" type="number" step="0.01" min="0" value="21">
+                                        </p>
+                                        <p class="control"><a class="button is-small is-static">%</a></p>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <label class="label is-small">IVA (%)</label>
+                                    <div class="field has-addons">
+                                        <p class="control is-expanded">
+                                            <input id="rateIVA" class="input is-small" type="number" step="0.01" min="0" value="22">
+                                        </p>
+                                        <p class="control"><a class="button is-small is-static">%</a></p>
+                                    </div>
+                                    <p class="help is-size-7">Applicata su (commissione + transazione).</p>
+                                </div>
+                            </div>
+
+                            <article class="message is-info is-light" style="margin-top:.5rem;">
+                                <div class="message-body is-size-7">
+                                    Totale oneri di piattaforma (commissione + transazione + IVA su entrambi):
+                                    <strong><span id="lblPlatformPct">0,00</span>%</strong>
+                                </div>
+                            </article>
+                        </details>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="column is-6">
-            <details class="box">
-              <summary class="has-text-weight-semibold">Opzioni modificabili</summary>
-              <label class="label is-small">Costo transazione (%)</label>
-              <input id="rateTxn" class="input is-small" type="number" step="0.01" value="1.5">
-              <label class="label is-small" style="margin-top:.5rem;">Cedolare secca (%)</label>
-              <input id="rateCed" class="input is-small" type="number" step="0.01" value="21">
-            </details>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="grid" style="margin-top:1rem;">
-      <div>
-        <div class="card">
-          <header class="card-header"><p class="card-header-title">Dettaglio costi</p></header>
-          <div class="card-content">
-            <table class="table is-fullwidth is-striped">
-              <tbody>
-              <tr><th>Lordo</th><td class="has-text-right" id="outGross">€ 0,00</td></tr>
-              <tr><th>Commissione (15%)</th><td class="has-text-right" id="outComm">€ 0,00</td></tr>
-              <tr><th>Costo transazione (<span id="lblTxn">1,5</span>%)</th><td class="has-text-right" id="outTxn">€ 0,00</td></tr>
-              <tr><th>IVA 22% su (commissione+transazione)</th><td class="has-text-right" id="outIVA">€ 0,00</td></tr>
-              <tr><th>Cedolare secca (<span id="lblCed">21</span>%)</th><td class="has-text-right" id="outCed">€ 0,00</td></tr>
-              </tbody>
-              <tfoot>
-              <tr><th>Totale costi</th><th class="has-text-right" id="outTotalCosts">€ 0,00</th></tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="card">
-          <header class="card-header"><p class="card-header-title">Netto</p></header>
-          <div class="card-content">
-            <p class="title is-2 has-text-success" id="outNet">€ 0,00</p>
-            <p>Incidenza costi: <strong id="outPctCosts">0,00%</strong></p>
-            <progress class="progress is-primary" id="outProgress" value="0" max="100">0%</progress>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <button id="btnReset" class="button is-light">Azzera</button>
-            <button id="btnSample" class="button is-info is-light">Esempio €250</button>
-          </div>
-        </div>
-      </div>
-    </div>
+        <!-- RISULTATI -->
+        <div class="grid" style="margin-top:1rem;">
+            <div>
+                <div class="card">
+                    <header class="card-header"><p class="card-header-title">Dettaglio costi</p></header>
+                    <div class="card-content">
+                        <table class="table is-fullwidth is-striped">
+                            <tbody>
+                            <tr><th>Lordo</th><td class="has-text-right result-number" id="outGross">€ 0,00</td></tr>
+                            <tr><th>Commissione (<span id="lblComm">15,00</span>%)</th><td class="has-text-right result-number" id="outComm">€ 0,00</td></tr>
+                            <tr><th>Costo transazione (<span id="lblTxn">1,50</span>%)</th><td class="has-text-right result-number" id="outTxn">€ 0,00</td></tr>
+                            <tr><th>IVA <span id="lblIVA">22</span>% su (commissione + transazione)</th><td class="has-text-right result-number" id="outIVA">€ 0,00</td></tr>
+                            <tr><th>Cedolare secca (<span id="lblCed">21,00</span>%)</th><td class="has-text-right result-number" id="outCed">€ 0,00</td></tr>
+                            </tbody>
+                            <tfoot>
+                            <tr><th>Totale costi</th><th class="has-text-right result-number" id="outTotalCosts">€ 0,00</th></tr>
+                            </tfoot>
+                        </table>
+                        <p class="is-size-7 muted">L’IVA è calcolata solo sulla somma: commissione + transazione.</p>
+                    </div>
+                </div>
+            </div>
 
-    <div class="card sticky-footer has-background-white" style="margin-top:1rem;">
-      <div class="card-content">
-        <div class="columns is-mobile is-vcentered">
-          <div class="column"><span class="tag is-medium is-light">Lordo</span> <span id="chipGross">€ 0,00</span></div>
-          <div class="column"><span class="tag is-medium is-warning is-light">Costi</span> <span id="chipCosts">€ 0,00</span></div>
-          <div class="column has-text-right"><span class="tag is-medium is-success">Netto</span> <span id="chipNet">€ 0,00</span></div>
+            <div>
+                <div class="card">
+                    <header class="card-header"><p class="card-header-title">Netto</p></header>
+                    <div class="card-content">
+                        <p class="title is-2 has-text-success result-number" id="outNet">€ 0,00</p>
+                        <p>Incidenza costi su lordo: <strong class="result-number" id="outPctCosts">0,00%</strong></p>
+                        <progress class="progress is-primary" id="outProgress" value="0" max="100">0%</progress>
+                        <p class="is-size-7 muted">Netto = Lordo − (Commissione + Transazione + IVA + Cedolare secca)</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <button id="btnReset" class="button is-light">Azzera</button>
+                        <button id="btnSample" class="button is-info is-light">Esempio €250</button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <!-- FOOTER STICKY -->
+        <div class="card sticky-footer has-background-white" style="margin-top:1rem;">
+            <div class="card-content">
+                <div class="columns is-mobile is-vcentered">
+                    <div class="column"><span class="tag is-medium is-light">Lordo</span> <span class="ml-2 result-number" id="chipGross">€ 0,00</span></div>
+                    <div class="column"><span class="tag is-medium is-warning is-light">Costi</span> <span class="ml-2 result-number" id="chipCosts">€ 0,00</span></div>
+                    <div class="column has-text-right"><span class="tag is-medium is-success">Netto</span> <span class="ml-2 has-text-weight-semibold result-number" id="chipNet">€ 0,00</span></div>
+                </div>
+            </div>
+        </div>
+
     </div>
-  </div>
 </section>
 
 <script>
-  const COMM_RATE = 15 / 100;
-  const IVA_RATE = 0.22;
-  const fmt = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
-  const el = id => document.getElementById(id);
-  const clamp = n => isFinite(n) && n >= 0 ? n : 0;
+    // --- Utils ---
+    const fmt = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
+    const el = id => document.getElementById(id);
+    const clamp = n => isFinite(n) && n >= 0 ? n : 0;
+    const toRate = v => clamp(parseFloat(v)) / 100;
+    const toAmount = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+    const pct = n => (n).toFixed(2).replace('.', ',');
 
-  const gross = el('gross');
-  const rateTxn  = el('rateTxn');
-  const rateCed  = el('rateCed');
-  const lblTxn = el('lblTxn');
-  const lblCed = el('lblCed');
+    // Inputs
+    const gross   = el('gross');
+    const rateComm= el('rateComm');
+    const rateTxn = el('rateTxn');
+    const rateCed = el('rateCed');
+    const rateIVA = el('rateIVA');
 
-  const outGross = el('outGross');
-  const outComm = el('outComm');
-  const outTxn  = el('outTxn');
-  const outIVA  = el('outIVA');
-  const outCed  = el('outCed');
-  const outTotalCosts = el('outTotalCosts');
-  const outNet  = el('outNet');
-  const outPctCosts = el('outPctCosts');
-  const outProgress = el('outProgress');
-  const chipGross = el('chipGross');
-  const chipCosts = el('chipCosts');
-  const chipNet   = el('chipNet');
+    // Labels
+    const lblComm = el('lblComm');
+    const lblTxn  = el('lblTxn');
+    const lblCed  = el('lblCed');
+    const lblIVA  = el('lblIVA');
+    const lblPlatformPct = el('lblPlatformPct');
 
-  function toRate(v){ return clamp(parseFloat(v)) / 100; }
-  function toAmount(v){ const n = parseFloat(v); return isFinite(n) ? n : 0; }
+    // Outputs
+    const outGross = el('outGross');
+    const outComm  = el('outComm');
+    const outTxn   = el('outTxn');
+    const outIVA   = el('outIVA');
+    const outCed   = el('outCed');
+    const outTotalCosts = el('outTotalCosts');
+    const outNet   = el('outNet');
+    const outPctCosts = el('outPctCosts');
+    const outProgress = el('outProgress');
+    const chipGross = el('chipGross');
+    const chipCosts = el('chipCosts');
+    const chipNet   = el('chipNet');
 
-  function recalc(){
-    const G = toAmount(gross.value);
-    const rT = toRate(rateTxn.value || 1.5);
-    const rS = toRate(rateCed.value || 21);
+    function recalc(){
+        const G  = toAmount(gross.value);
+        const rC = toRate(rateComm.value || 15);
+        const rT = toRate(rateTxn.value  || 1.5);
+        const rS = toRate(rateCed.value  || 21);
+        const rI = toRate(rateIVA.value  || 22);
 
-    const commissione = G * COMM_RATE;
-    const transazione = G * rT;
-    const iva = (commissione + transazione) * IVA_RATE;
-    const cedolare = G * rS;
+        // Calcoli
+        const commissione = G * rC;
+        const transazione = G * rT;
+        const iva = (commissione + transazione) * rI; // IVA su (commissione + transazione)
+        const cedolare = G * rS;
 
-    const totalCosts = commissione + transazione + iva + cedolare;
-    const net = Math.max(0, G - totalCosts);
-    const pctCosts = G > 0 ? (totalCosts / G) * 100 : 0;
+        const totalCosts = commissione + transazione + iva + cedolare;
+        const net = Math.max(0, G - totalCosts);
+        const pctCosts = G > 0 ? (totalCosts / G) * 100 : 0;
 
-    outGross.textContent = fmt.format(G);
-    outComm.textContent  = fmt.format(commissione);
-    outTxn.textContent   = fmt.format(transazione);
-    outIVA.textContent   = fmt.format(iva);
-    outCed.textContent   = fmt.format(cedolare);
-    outTotalCosts.textContent = fmt.format(totalCosts);
+        // Piattaforma % sul lordo (commissione + transazione + relativa IVA)
+        const platformPct = (rC + rT) * (1 + rI) * 100;
 
-    outNet.textContent = fmt.format(net);
-    outPctCosts.textContent = pctCosts.toFixed(2).replace('.', ',') + '%';
-    outProgress.value = pctCosts;
+        // Render
+        outGross.textContent = fmt.format(G);
+        outComm.textContent  = fmt.format(commissione);
+        outTxn.textContent   = fmt.format(transazione);
+        outIVA.textContent   = fmt.format(iva);
+        outCed.textContent   = fmt.format(cedolare);
+        outTotalCosts.textContent = fmt.format(totalCosts);
 
-    chipGross.textContent = fmt.format(G);
-    chipCosts.textContent = fmt.format(totalCosts);
-    chipNet.textContent   = fmt.format(net);
+        outNet.textContent = fmt.format(net);
+        outPctCosts.textContent = pctCosts.toFixed(2).replace('.', ',') + '%';
+        outProgress.value = pctCosts;
 
-    lblTxn.textContent = (rT * 100).toString().replace('.', ',');
-    lblCed.textContent = (rS * 100).toString().replace('.', ',');
-  }
+        chipGross.textContent = fmt.format(G);
+        chipCosts.textContent = fmt.format(totalCosts);
+        chipNet.textContent   = fmt.format(net);
 
-  [gross, rateTxn, rateCed].forEach(i => {
-    i.addEventListener('input', recalc);
-    i.addEventListener('change', recalc);
-  });
+        // Labels %
+        lblComm.textContent = pct(rC * 100);
+        lblTxn.textContent  = pct(rT * 100);
+        lblCed.textContent  = pct(rS * 100);
+        lblIVA.textContent  = (rI * 100).toString().replace('.', ',');
+        lblPlatformPct.textContent = platformPct.toFixed(2).replace('.', ',');
+    }
 
-  el('btnReset').addEventListener('click', () => {
-    gross.value = '';
-    rateTxn.value  = 1.5;
-    rateCed.value  = 21;
+    [gross, rateComm, rateTxn, rateCed, rateIVA].forEach(i => {
+        i.addEventListener('input', recalc);
+        i.addEventListener('change', recalc);
+    });
+
+    el('btnReset')?.addEventListener('click', () => {
+        gross.value = '';
+        rateComm.value = 15;
+        rateTxn.value  = 1.5;
+        rateCed.value  = 21;
+        rateIVA.value  = 22;
+        recalc();
+        gross.focus();
+    });
+
+    el('btnSample')?.addEventListener('click', () => {
+        gross.value = 250;
+        recalc();
+    });
+
     recalc();
-    gross.focus();
-  });
-
-  el('btnSample').addEventListener('click', () => {
-    gross.value = 250;
-    recalc();
-  });
-
-  recalc();
 </script>
 </body>
 </html>
