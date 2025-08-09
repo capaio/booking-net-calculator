@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calcolo netto da lordo (Booking)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <style>
+      .result-number { font-variant-numeric: tabular-nums; }
+      .sticky-footer { position: sticky; bottom: 0; z-index: 10; }
+      .muted { opacity: .8; }
+      @media (min-width: 1024px){
+          .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      }
+  </style>
+</head>
+<body class="has-background-light">
+<section class="section">
+  <div class="container">
+    <h1 class="title is-3">Calcolo guadagno netto da lordo (Booking)</h1>
+
+    <div class="card">
+      <div class="card-content">
+        <div class="columns">
+          <div class="column is-6">
+            <label class="label" for="gross">Lordo (€)</label>
+            <div class="field has-addons">
+              <p class="control"><a class="button is-static">€</a></p>
+              <p class="control is-expanded">
+                <input id="gross" class="input" type="number" min="0" step="0.01" placeholder="Es. 250" autofocus />
+              </p>
+            </div>
+          </div>
+          <div class="column is-6">
+            <details class="box">
+              <summary class="has-text-weight-semibold">Opzioni modificabili</summary>
+              <label class="label is-small">Costo transazione (%)</label>
+              <input id="rateTxn" class="input is-small" type="number" step="0.01" value="1.5">
+              <label class="label is-small" style="margin-top:.5rem;">Cedolare secca (%)</label>
+              <input id="rateCed" class="input is-small" type="number" step="0.01" value="21">
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:1rem;">
+      <div>
+        <div class="card">
+          <header class="card-header"><p class="card-header-title">Dettaglio costi</p></header>
+          <div class="card-content">
+            <table class="table is-fullwidth is-striped">
+              <tbody>
+              <tr><th>Lordo</th><td class="has-text-right" id="outGross">€ 0,00</td></tr>
+              <tr><th>Commissione (15%)</th><td class="has-text-right" id="outComm">€ 0,00</td></tr>
+              <tr><th>Costo transazione (<span id="lblTxn">1,5</span>%)</th><td class="has-text-right" id="outTxn">€ 0,00</td></tr>
+              <tr><th>IVA 22% su (commissione+transazione)</th><td class="has-text-right" id="outIVA">€ 0,00</td></tr>
+              <tr><th>Cedolare secca (<span id="lblCed">21</span>%)</th><td class="has-text-right" id="outCed">€ 0,00</td></tr>
+              </tbody>
+              <tfoot>
+              <tr><th>Totale costi</th><th class="has-text-right" id="outTotalCosts">€ 0,00</th></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <header class="card-header"><p class="card-header-title">Netto</p></header>
+          <div class="card-content">
+            <p class="title is-2 has-text-success" id="outNet">€ 0,00</p>
+            <p>Incidenza costi: <strong id="outPctCosts">0,00%</strong></p>
+            <progress class="progress is-primary" id="outProgress" value="0" max="100">0%</progress>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-content">
+            <button id="btnReset" class="button is-light">Azzera</button>
+            <button id="btnSample" class="button is-info is-light">Esempio €250</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card sticky-footer has-background-white" style="margin-top:1rem;">
+      <div class="card-content">
+        <div class="columns is-mobile is-vcentered">
+          <div class="column"><span class="tag is-medium is-light">Lordo</span> <span id="chipGross">€ 0,00</span></div>
+          <div class="column"><span class="tag is-medium is-warning is-light">Costi</span> <span id="chipCosts">€ 0,00</span></div>
+          <div class="column has-text-right"><span class="tag is-medium is-success">Netto</span> <span id="chipNet">€ 0,00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const COMM_RATE = 15 / 100;
+  const IVA_RATE = 0.22;
+  const fmt = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
+  const el = id => document.getElementById(id);
+  const clamp = n => isFinite(n) && n >= 0 ? n : 0;
+
+  const gross = el('gross');
+  const rateTxn  = el('rateTxn');
+  const rateCed  = el('rateCed');
+  const lblTxn = el('lblTxn');
+  const lblCed = el('lblCed');
+
+  const outGross = el('outGross');
+  const outComm = el('outComm');
+  const outTxn  = el('outTxn');
+  const outIVA  = el('outIVA');
+  const outCed  = el('outCed');
+  const outTotalCosts = el('outTotalCosts');
+  const outNet  = el('outNet');
+  const outPctCosts = el('outPctCosts');
+  const outProgress = el('outProgress');
+  const chipGross = el('chipGross');
+  const chipCosts = el('chipCosts');
+  const chipNet   = el('chipNet');
+
+  function toRate(v){ return clamp(parseFloat(v)) / 100; }
+  function toAmount(v){ const n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+  function recalc(){
+    const G = toAmount(gross.value);
+    const rT = toRate(rateTxn.value || 1.5);
+    const rS = toRate(rateCed.value || 21);
+
+    const commissione = G * COMM_RATE;
+    const transazione = G * rT;
+    const iva = (commissione + transazione) * IVA_RATE;
+    const cedolare = G * rS;
+
+    const totalCosts = commissione + transazione + iva + cedolare;
+    const net = Math.max(0, G - totalCosts);
+    const pctCosts = G > 0 ? (totalCosts / G) * 100 : 0;
+
+    outGross.textContent = fmt.format(G);
+    outComm.textContent  = fmt.format(commissione);
+    outTxn.textContent   = fmt.format(transazione);
+    outIVA.textContent   = fmt.format(iva);
+    outCed.textContent   = fmt.format(cedolare);
+    outTotalCosts.textContent = fmt.format(totalCosts);
+
+    outNet.textContent = fmt.format(net);
+    outPctCosts.textContent = pctCosts.toFixed(2).replace('.', ',') + '%';
+    outProgress.value = pctCosts;
+
+    chipGross.textContent = fmt.format(G);
+    chipCosts.textContent = fmt.format(totalCosts);
+    chipNet.textContent   = fmt.format(net);
+
+    lblTxn.textContent = (rT * 100).toString().replace('.', ',');
+    lblCed.textContent = (rS * 100).toString().replace('.', ',');
+  }
+
+  [gross, rateTxn, rateCed].forEach(i => {
+    i.addEventListener('input', recalc);
+    i.addEventListener('change', recalc);
+  });
+
+  el('btnReset').addEventListener('click', () => {
+    gross.value = '';
+    rateTxn.value  = 1.5;
+    rateCed.value  = 21;
+    recalc();
+    gross.focus();
+  });
+
+  el('btnSample').addEventListener('click', () => {
+    gross.value = 250;
+    recalc();
+  });
+
+  recalc();
+</script>
+</body>
+</html>
